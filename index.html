@@ -184,12 +184,9 @@
       animation: fiesta-flota 6s ease-in-out infinite;
     }
     .fiesta-particle.note { font-family: Georgia, serif; font-size: 18px; font-weight: 900; text-shadow: 0 0 8px currentColor; }
-    .fiesta-particle.taco { font-size: 15px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.45)); }
     .f1 { left: 16%; bottom: 15%; color: var(--verde); animation-delay: -1s; }
     .f2 { left: 46%; top: 20%; color: var(--oro); animation-delay: -3.3s; }
     .f3 { right: 18%; bottom: 13%; color: var(--rojo); animation-delay: -4.8s; }
-    .f4 { right: 33%; top: 15%; animation-delay: -2.2s; }
-    .f5 { left: 34%; bottom: 8%; animation-delay: -5.4s; }
 
     .glint {
       position: absolute;
@@ -324,6 +321,17 @@
       background: var(--rojo);
       box-shadow: 0 0 0 0 rgba(230,54,65,.65);
       animation: pulso 1.8s ease-out infinite;
+    }
+    .date-time {
+      color: #fff;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: clamp(7px, 1.55vw, 9px);
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .035em;
+      line-height: 1;
+      white-space: nowrap;
+      text-shadow: 0 1px 6px rgba(0,0,0,.9), 0 0 8px rgba(255,255,255,.16);
     }
 
     .main {
@@ -715,8 +723,6 @@
     <span class="fiesta-particle note f1" aria-hidden="true">♪</span>
     <span class="fiesta-particle note f2" aria-hidden="true">♫</span>
     <span class="fiesta-particle note f3" aria-hidden="true">♪</span>
-    <span class="fiesta-particle taco f4" aria-hidden="true">🌮</span>
-    <span class="fiesta-particle taco f5" aria-hidden="true">🌮</span>
     <span class="glint g1" aria-hidden="true"></span><span class="glint g2" aria-hidden="true"></span><span class="glint g3" aria-hidden="true"></span><span class="glint g4" aria-hidden="true"></span><span class="glint g5" aria-hidden="true"></span>
     <span class="catrina-photo" aria-hidden="true"></span>
     <span class="white-rose rose1" aria-hidden="true">✿</span><span class="white-rose rose2" aria-hidden="true">❀</span><span class="white-rose rose3" aria-hidden="true">✿</span><span class="white-rose rose4" aria-hidden="true">❀</span><span class="white-rose rose5" aria-hidden="true">✿</span>
@@ -776,7 +782,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
           Historial
         </button>
-        <div class="status"><span class="status-dot"></span><span class="status-label" id="statusText">Listo para escuchar</span></div>
+        <div class="status" id="statusIndicator" aria-label="Listo para escuchar">
+          <span class="status-dot"></span>
+          <time class="date-time" id="dateTime" aria-label="Fecha y hora local">--/--/---- • --:--:--</time>
+        </div>
       </div>
     </div>
 
@@ -808,7 +817,8 @@
       const bitrate = document.getElementById('bitrate');
       const djName = document.getElementById('djName');
       const djWrap = document.getElementById('djWrap');
-      const statusText = document.getElementById('statusText');
+      const statusIndicator = document.getElementById('statusIndicator');
+      const dateTime = document.getElementById('dateTime');
       const historyButton = document.getElementById('historyButton');
       const historyClose = document.getElementById('historyClose');
       const historyPanel = document.getElementById('historyPanel');
@@ -818,8 +828,16 @@
       let wantsPlayback = false;
 
       function setStatus(text, state = '') {
-        statusText.textContent = text;
+        statusIndicator.setAttribute('aria-label', text);
+        statusIndicator.title = text;
         radio.classList.toggle('error', state === 'error');
+      }
+
+      function updateDateTime() {
+        const now = new Date();
+        const pad = value => String(value).padStart(2, '0');
+        dateTime.textContent = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} • ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        dateTime.dateTime = now.toISOString();
       }
 
       function syncPlaybackUI() {
@@ -966,8 +984,10 @@
       });
 
       syncVolume();
+      updateDateTime();
       updateMetadata();
       attemptAutoplay();
+      setInterval(updateDateTime, 1000);
       setInterval(updateMetadata, 15000);
     })();
   </script>
